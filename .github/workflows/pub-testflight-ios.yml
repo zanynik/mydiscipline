@@ -349,6 +349,9 @@ jobs:
 
                   xcodegen generate
 
+                  # Build output dir (also holds the generated ExportOptions.plist).
+                  mkdir -p build
+
                   # The export options plist carries the per-run profile name
                   # and the team id, so it can't be a static committed file.
                   cat >build/ExportOptions.plist <<PLIST
@@ -372,7 +375,6 @@ jobs:
                   </plist>
                   PLIST
 
-                  mkdir -p build
                   xcodebuild archive \
                     -project "${APP_NAME}.xcodeproj" \
                     -scheme "${APP_NAME}" \
