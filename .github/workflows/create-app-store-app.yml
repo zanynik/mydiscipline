@@ -1,46 +1,36 @@
-name: Create App Store app (one-off)
+name: Register bundle ID (one-off)
 
-# This workflow is a TEMPORARY one-off: it creates the App Store Connect
-# app entry (bundle id: com.mydiscipline.app) using `fastlane produce`.
-# Once the run on the `macOS` environment succeeds, this file can be
-# removed (or left disabled) — it should not run on every push.
+# This workflow is a TEMPORARY one-off: it registers the bundle ID
+# (App ID) com.mydiscipline.app in the Apple Developer Portal via the
+# App Store Connect API (POST /v1/bundleIds), using an Admin API key.
+#
+# Why not fastlane `produce`? In fastlane 2.236.x `produce` only authenticates
+# via the legacy Apple Developer Portal web session (Apple ID + password),
+# so it cannot be driven by an API key in a non-interactive CI run. There is
+# no fastlane action that registers a bundle ID via the modern API, so we call
+# the endpoint directly in scripts/register_bundle_id.py.
+#
+# Once the run succeeds, this file (and the script) can be deleted.
 
 on:
   workflow_dispatch: # manual trigger only
 
 jobs:
-  create_app:
+  register_bundle_id:
     runs-on: macos-latest
     environment: macOS
 
     env:
-      # Map the repo secrets (named for the action that owns them) onto the
-      # environment variable names that fastlane reads automatically for
-      # App Store Connect API key authentication. Your secret names are
-      # unchanged; they're just copied here under fastlane's expected names.
+      # Map the repo secrets onto the env var names the script reads. The key
+      # content must be usable as a PEM private key; if the secret holds only the
+      # raw base64 body of the .p8 file, the script re-wraps it in PEM headers.
       APP_STORE_CONNECT_API_KEY_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
       APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
       APP_STORE_CONNECT_API_KEY_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
-      # Used by `produce` to target the correct developer team.
-      PRODUCE_TEAM_ID: ${{ secrets.APPLE_DEVELOPMENT_TEAM }}
-      # `produce` still requires a username value even when authenticating via
-      # the API key (the key does the real auth; this just satisfies the lookup).
-      PRODUCE_USERNAME: ${{ secrets.APPLE_ID }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Ruby & Bundler
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.2'
-          bundler-cache: false
-
-      - name: Install fastlane
-        run: |
-          bundle init
-          bundle add fastlane
-
-      - name: Create App Store app with fastlane produce
-        run: bundle exec fastlane create_new_app
+      - name: Register bundle ID via App Store Connect API
+        run: python3 scripts/register_bundle_id.py
