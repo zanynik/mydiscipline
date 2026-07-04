@@ -35,7 +35,9 @@ jobs:
           bundler-cache: false
 
       - name: Install fastlane
-        run: bundle add fastlane
+        run: |
+          bundle init
+          bundle add fastlane
 
       - name: Create App Store app with fastlane produce
         run: |
