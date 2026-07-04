@@ -8,7 +8,7 @@ name: Register bundle ID (one-off)
 # via the legacy Apple Developer Portal web session (Apple ID + password),
 # so it cannot be driven by an API key in a non-interactive CI run. There is
 # no fastlane action that registers a bundle ID via the modern API, so we call
-# the endpoint directly in scripts/register_bundle_id.py.
+# the endpoint directly in register_bundle_id/register_bundle_id.py.
 #
 # Once the run succeeds, this file (and the script) can be deleted.
 
@@ -36,4 +36,4 @@ jobs:
         env:
           BUNDLE_ID: "com.zanynik.mydiscipline"
           BUNDLE_NAME: "MyDiscipline"
-        run: python3 scripts/register_bundle_id.py
+        run: python3 register_bundle_id/register_bundle_id.py
