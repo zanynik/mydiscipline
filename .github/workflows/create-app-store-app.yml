@@ -1,0 +1,46 @@
+name: Create App Store app (one-off)
+
+# This workflow is a TEMPORARY one-off: it creates the App Store Connect
+# app entry (bundle id: com.mydiscipline.app) using `fastlane produce`.
+# Once the run on the `macOS` environment succeeds, this file can be
+# removed (or left disabled) — it should not run on every push.
+
+on:
+  workflow_dispatch: # manual trigger only
+
+jobs:
+  create_app:
+    runs-on: macos-latest
+    environment: macOS
+
+    env:
+      # Map the repo secrets (named for the action that owns them) onto the
+      # environment variable names that fastlane reads automatically for
+      # App Store Connect API key authentication. Your secret names are
+      # unchanged; they're just copied here under fastlane's expected names.
+      APP_STORE_CONNECT_API_KEY_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+      APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+      APP_STORE_CONNECT_API_KEY_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
+      # Used by `produce` to target the correct developer team.
+      PRODUCE_TEAM_ID: ${{ secrets.APPLE_DEVELOPMENT_TEAM }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby & Bundler
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: false
+
+      - name: Install fastlane
+        run: bundle add fastlane
+
+      - name: Create App Store app with fastlane produce
+        run: |
+          bundle exec fastlane produce \
+            --app_identifier "com.mydiscipline.app" \
+            --app_name "MyDiscipline" \
+            --sku "discipline" \
+            --team_id "Y2CUHDBA6F"
