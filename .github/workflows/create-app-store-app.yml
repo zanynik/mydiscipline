@@ -23,6 +23,9 @@ jobs:
       APP_STORE_CONNECT_API_KEY_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
       # Used by `produce` to target the correct developer team.
       PRODUCE_TEAM_ID: ${{ secrets.APPLE_DEVELOPMENT_TEAM }}
+      # `produce` still requires a username value even when authenticating via
+      # the API key (the key does the real auth; this just satisfies the lookup).
+      PRODUCE_USERNAME: ${{ secrets.APPLE_ID }}
 
     steps:
       - name: Checkout
