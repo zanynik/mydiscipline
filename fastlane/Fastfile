@@ -18,17 +18,20 @@ platform :ios do
     UI.important("issuer_id present: #{!issuer_id.empty?}")
     UI.important("key_content present: #{!key_content.empty?}")
 
-    # 1. Load + validate the API key. This authenticates silently (no password).
-    api_key = app_store_connect_api_key(
+    # 1. Load + validate the API key. This authenticates silently (no password)
+    #    and stores the key into the lane's shared values. Do NOT pass `api_key:`
+    #    to produce below — this version of produce reads the stored key
+    #    automatically (it doesn't accept an api_key parameter).
+    app_store_connect_api_key(
       key_id: key_id,
       issuer_id: issuer_id,
       key_content: key_content,
       in_house: false
     )
 
-    # 2. Create the app record using that authenticated session.
+    # 2. Create the app record. produce picks up the API key from the lane
+    #    context populated in the step above.
     produce(
-      api_key: api_key,
       app_identifier: "com.mydiscipline.app",
       app_name: "MyDiscipline",
       sku: "discipline",
