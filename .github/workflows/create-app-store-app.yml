@@ -43,9 +43,4 @@ jobs:
           bundle add fastlane
 
       - name: Create App Store app with fastlane produce
-        run: |
-          bundle exec fastlane produce \
-            --app_identifier "com.mydiscipline.app" \
-            --app_name "MyDiscipline" \
-            --sku "discipline" \
-            --team_id "Y2CUHDBA6F"
+        run: bundle exec fastlane create_new_app
