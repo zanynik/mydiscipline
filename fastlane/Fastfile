@@ -6,10 +6,25 @@ default_platform(:ios)
 
 platform :ios do
   lane :create_new_app do
-    # 1. Load the App Store Connect API key from the APP_STORE_CONNECT_API_KEY_*
-    #    env vars (mapped in the GitHub Actions workflow from the repo secrets).
-    #    This silently authenticates without prompting for a password.
-    api_key = app_store_connect_api_key
+    # Read the App Store Connect API key values explicitly from the env vars
+    # (mapped in the GitHub Actions workflow from the repo secrets). Passing
+    # them explicitly avoids relying on fastlane's version-dependent auto-detect.
+    key_id = ENV["APP_STORE_CONNECT_API_KEY_KEY_ID"].to_s
+    issuer_id = ENV["APP_STORE_CONNECT_API_KEY_ISSUER_ID"].to_s
+    key_content = ENV["APP_STORE_CONNECT_API_KEY_KEY_CONTENT"].to_s
+
+    # Diagnostics (presence only — never print the values themselves).
+    UI.important("key_id present: #{!key_id.empty?}")
+    UI.important("issuer_id present: #{!issuer_id.empty?}")
+    UI.important("key_content present: #{!key_content.empty?}")
+
+    # 1. Load + validate the API key. This authenticates silently (no password).
+    api_key = app_store_connect_api_key(
+      key_id: key_id,
+      issuer_id: issuer_id,
+      key_content: key_content,
+      in_house: false
+    )
 
     # 2. Create the app record using that authenticated session.
     produce(
