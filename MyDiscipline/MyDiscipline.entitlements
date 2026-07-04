@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+	  Required by the Screen Time API (FamilyControls / ManagedSettings /
+	  DeviceActivity). The matching capability is enabled on the App ID
+	  com.zanynik.mydiscipline by the CI workflow via the App Store Connect API.
+
+	  NOTE: Family Controls is a restricted entitlement. Apple must separately
+	  approve the production distribution entitlement before it works in
+	  TestFlight builds. It works immediately in local development builds.
+	-->
+	<key>com.apple.developer.family-controls</key>
+	<true/>
+</dict>
+</plist>

@@ -14,3 +14,12 @@ fastlane/test_output/
 
 # macOS
 .DS_Store
+
+# Xcode / XcodeGen generated artifacts
+# The .xcodeproj is regenerated from project.yml via `xcodegen generate`.
+*.xcodeproj/
+*.xcworkspace/
+build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
