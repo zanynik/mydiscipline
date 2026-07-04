@@ -120,11 +120,20 @@ def register_bundle_id(jwt):
     except urllib.error.HTTPError as e:
         status = e.code
         text = e.read().decode()
-        # 409 "Entity already exists" is success for our one-off purpose.
-        already_exists = status == 409 and "already" in text.lower()
-        if already_exists:
-            print(f"Bundle ID '{BUNDLE_ID}' already exists — nothing to register.")
+        # Apple returns 409 with ENTITY_ERROR.ATTRIBUTE.INVALID and a message like
+        # "An App ID with Identifier '...' is not available" when the identifier is
+        # already registered (by anyone, globally — bundle identifiers are unique
+        # across all of Apple). For our one-off purpose that is a benign outcome.
+        already_taken = (
+            status == 409
+            and ("ENTITY_ERROR.ATTRIBUTE.INVALID" in text)
+            and ("not available" in text.lower() or "already" in text.lower())
+        )
+        if already_taken:
+            print(f"Bundle ID '{BUNDLE_ID}' is already registered (not available).")
             print(f"ASC response ({status}): {text}")
+            # Try to confirm it belongs to this team via a lookup GET.
+            lookup(jwt)
             return 0
         print(f"ASC API error {status}:", file=sys.stderr)
         print(text, file=sys.stderr)
@@ -140,6 +149,47 @@ def register_bundle_id(jwt):
     print(f"Unexpected status {status}:", file=sys.stderr)
     print(text, file=sys.stderr)
     return 1
+
+
+def lookup(jwt):
+    """GET /v1/bundleIds filtered by identifier, to confirm the existing App ID
+    is visible to (and therefore registered to) this team."""
+    import urllib.parse
+    url = (
+        f"{API_BASE}/v1/bundleIds?filter%5Bidentifier%5D="
+        + urllib.parse.quote(BUNDLE_ID)
+    )
+    req = urllib.request.Request(
+        url,
+        method="GET",
+        headers={
+            "Authorization": f"Bearer {jwt}",
+            "Accept": "application/json",
+        },
+    )
+    print(f"\nLooking up '{BUNDLE_ID}' via GET /v1/bundleIds ...")
+    try:
+        with urllib.request.urlopen(req, timeout=60) as resp:
+            data = json.loads(resp.read().decode())
+    except urllib.error.HTTPError as e:
+        print(f"  lookup failed ({e.code}); the identifier is registered outside "
+              f"this team or the key lacks read access.", file=sys.stderr)
+        print(f"  {e.read().decode()}", file=sys.stderr)
+        return
+    except urllib.error.URLError as e:
+        print(f"  lookup network error: {e}", file=sys.stderr)
+        return
+
+    items = data.get("data", [])
+    if not items:
+        print(f"  '{BUNDLE_ID}' is registered to ANOTHER team (not visible to this key).")
+        return
+    for it in items:
+        bid = it.get("id")
+        attrs = it.get("attributes", {})
+        print(f"  FOUND in this team: id={bid} identifier={attrs.get('identifier')} "
+              f"name={attrs.get('name')} platform={attrs.get('platform')} "
+              f"status={attrs.get('status')}")
 
 
 def main():

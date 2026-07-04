@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Bundler / fastlane local artifacts (not used now, but harmless to ignore)
+.bundle/
+vendor/
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/test_output/
+
+# macOS
+.DS_Store
